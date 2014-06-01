@@ -1,0 +1,38 @@
+﻿class Poly.Bot.Youtube : Poly.Bot.Module {
+	function Youtube() {
+		this.Module("Youtube");
+		this.Format = '\\[Youtube\\] Title: {title}';
+	}
+
+	function Init() {
+		Cmd = this.GetHandler("Cmd");
+
+		Cmd.On("*http*://{Host}/{Request}", this.OnLink);
+	}
+
+	function OnLink() {
+		Mod = GetModule('Youtube');
+
+		if (Request) {
+			if (Request.Contains(" ")) {
+				Request = Request.Substring("", " ");
+			}
+		}
+
+		Url = Url("http://" + Host + "/" + Request);	
+
+		if (Url.Host.Contains('youtube.com')) {
+			Mod.OnYoutube(this, Convo, Url.Query.v, Mod.Format);
+		}
+		else if (Url.Host.Contains('youtu.be')) {
+			Mod.OnYoutube(this, Convo, Url.Path, Mod.Format);
+		}
+	}
+	
+	function OnYoutube(Bot, Convo, V, Format) {
+		Result = Http.Get('http://gdata.youtube.com/feeds/api/videos/' + V + '?v=2&alt=jsonc');
+		Result = Result.ToObject();
+
+		Bot.SendMessage(Convo, Result.data.Template(Format));
+	}
+}

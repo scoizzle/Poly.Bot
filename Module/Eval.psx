@@ -1,0 +1,30 @@
+﻿using Psx = Poly.Script.Engine;
+
+class Poly.Bot.Eval : Poly.Bot.Module {
+	function Eval() {
+		this.Module("Eval");
+	}
+
+	function Init() {
+		Cmd = this.GetHandler("Cmd");
+
+		Cmd.On("`{Script}", this.OnEval);
+	}
+
+	function OnEval() {
+		Context = { };
+
+		Context.Bot = this;
+		Context.User = User;
+		Context.Convo = Convo;
+
+		StartTime = Time.Now.Ticks;
+
+		Thread = async(7000) {
+			Ret = Psx.Eval(Script, Context);
+		};
+
+		if (Ret && !Ret.StartsWith('!'))
+			this.SendMessage(Convo, Ret.ToString());
+	}
+}

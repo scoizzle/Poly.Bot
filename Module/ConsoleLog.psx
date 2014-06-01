@@ -1,0 +1,14 @@
+﻿class Poly.Bot.ConsoleLog : Poly.Bot.Module {
+	function ConsoleLog() {
+		this.Module('ConsoleLog');
+	}
+
+	function Init(Bot) {
+		Bot.On('Msg', this.OnMsg);
+		Bot.On('Notice', this.OnMsg);
+	}
+
+	function OnMsg() {
+		Console.WriteLine('[' + Convo.Name + '] <' + User.Nick + '> ' + Packet.Message);
+	}
+}

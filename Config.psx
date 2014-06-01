@@ -1,0 +1,9 @@
+﻿Log.Level = LogLevel.Info;
+
+include "src/Module.psx";
+include "src/Command.psx";
+include "src/*.psx";
+
+include "Module/*.psx";
+
+include "Bots/*.psx";

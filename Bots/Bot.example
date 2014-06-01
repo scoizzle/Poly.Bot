@@ -1,0 +1,17 @@
+﻿MyBot = Poly.Bot.Bot();
+
+MyBot.Configure({
+	"Server": "irc server",
+	"Password": "optional password",
+	"Port": 6667,
+	"Ident": "bot ident", 
+	"Nick": "bot nick",
+	"Realname": "bot realname",
+	"UserConfigFile": "Bots/BotName.UserConfig.json"
+});
+
+InitModules(MyBot, [
+	'Command', 'Youtube', 'ConsoleLog', 'Auth', 'Eval'
+]);
+
+MyBot.Start();

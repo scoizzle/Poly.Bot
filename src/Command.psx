@@ -1,0 +1,59 @@
+﻿using Events = Poly.Event;
+
+class Poly.Bot.Command : Poly.Bot.Module {
+	function Command() {
+		if (this.Module("Command")) {
+			this.Bots = [ ];
+			this.Commands = [ ];
+			this.Handles('Cmd');
+		}
+	}
+
+	function Init(Bot) {
+		Bot.On('Msg', this.Handle);
+		Bot.On('Notice', this.Handle);
+	}
+
+	function Handle() {
+		Cmd = GetHandler('Cmd');
+
+		foreach (C in Cmd.Commands) {
+			Data = Packet.Message.Match(C.Key);
+
+			if (Data != null) {
+				Data.Convo = Convo;
+				Data.User = User;
+				Data.Packet = Packet;
+				Data.this = this;
+
+				if (C.Value.IsCustom) {
+					Cmd.DoHandlerCommand(C.Value.Handler, C.Value.Function, Data);
+					break;
+				}
+				else {
+					Events.Invoke(C.Value, Data);
+					break;
+				}
+			}
+		}
+	}
+
+	function DoHandlerCommand(HandlerName, FunctionName, Data) {
+		Handler = GetHandler(HandlerName);
+		Function = Handler.[FunctionName];
+
+		Events.Invoke(Function, Data);
+	}
+
+	function On(MatchString, Handler) {
+		this.Commands[MatchString] = Handler;
+	}
+
+	function OnHandlerCommand(MatchString, HandlerName, FunctionName) {
+		Handler.IsCustom = true;
+		Handler.Handler = HandlerName;
+		Handler.Function = FunctionName;
+
+		this.On(MatchString, Handler);
+	}
+}

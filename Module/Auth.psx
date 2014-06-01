@@ -1,0 +1,90 @@
+﻿class Poly.Bot.Auth : Poly.Bot.Module {
+	function Auth() {
+		this.Module('Auth');
+		this.Handles('Auth');
+	}
+
+	function Init(Bot) {
+		if (!Bot.UserConfigFile) {
+			Log.Error('No UserConfigFile specified for ' + Bot.Ident);
+			return;
+		}
+
+		Cmd = this.GetHandler('Cmd'); // Get Command Module
+		
+		Cmd.OnHandlerCommand('!register {Username} {Password}', 'Auth', 'Register');
+		Cmd.OnHandlerCommand('!login {Username} {Password}', 'Auth', 'Login');
+		Cmd.OnHandlerCommand('!logout', 'Auth', 'Logout');
+
+		Bot.UserConfig = Load(Bot.UserConfigFile);
+
+		if (!Bot.UserConfig)
+			Bot.UserConfig = { };
+	}
+
+	function Register() {
+		if ((!Username) || (!Password)) {
+			this.SendMessage(Convo, 'Invalid Username or Password!');
+			return;
+		}
+
+		if (this.UserConfig[Username]){
+			this.SendMessage(Convo, 'User already exists!');
+			return;
+		}
+
+		U.Username = Username;
+		U.Password = Hash.SHA256(Password);
+		U.Display = User.Nick;
+
+		this.UserConfig[Username] = U;
+		this.UserConfig.Save(this.UserConfigFile);
+	}
+
+	function Login() {
+		if ((!Username) || (!Password)) {
+			this.SendMessage(Convo, 'Invalid Username or Password!');
+			return;
+		}
+
+		if (!this.UserConfig[Username]){
+			this.SendMessage(Convo, 'User does not exist!');
+			return;
+		}
+
+		U = this.UserConfig[Username];
+
+		if (U.Username == Username) {
+			if (U.Password == Hash.SHA256(Password)) {
+				User.Auth = U;
+
+				this.SendMessage(Convo, 'Welcome ' + U.Display + '!');
+				return U;
+			}
+		}
+
+		this.SendMessage(Convo, 'Invalid Username or Password!');
+	}
+
+	function Logout() {
+		if (User.Auth) {
+			User.Auth = null;
+		}
+
+		this.SendMessage(Convo, "Bye bye :(");
+	}
+
+	function GetUserInfo(Bot, Username) {
+		if (!Bot.UserConfig[Username]){
+			return false;
+		}
+
+		U = Bot.UserConfig[Username];
+		return U;
+	}
+
+	function SaveUserInfo(Bot, Username, Info) {
+		Bot.UserConfig[Username] = Info;
+		Bot.UserConfig.Save(Bot.UserConfigFile);
+	}
+}

@@ -1,0 +1,54 @@
+﻿if (!Static.Poly.Bot.Modules)
+	Static.Poly.Bot.Modules = { };
+
+function GetModule(Name) {
+	return Static.Poly.Bot.Modules[Name];
+}
+
+function SetModule(Name, Value) {
+	Static.Poly.Bot.Modules[Name] = Value;
+}
+
+function GetHandler(Name) {
+	return Static.Poly.Bot.Handlers[Name];
+}
+
+class Poly.Bot.Module {
+	function Module(Name) {
+		if (!Static.Poly.Bot.Modules[Name]) {
+			this.Name = Name;
+
+			Log.Info('Module ' + Name + ' loading!');
+
+			SetModule(Name, this);
+			return true;
+		}
+		return false;
+	}
+
+	function Init(Bot) { }
+
+	function Handles(Name) {
+		if (Static.Poly.Bot.Handlers[Name]) {
+			Log.Warning('Handler already registered: ' + Name + '! Overriding with ' + this.Name + '.');
+		}
+		Static.Poly.Bot.Handlers[Name] = this;
+	}
+
+	function GetHandler(Name) {
+		return Static.Poly.Bot.Handlers[Name];
+	}
+}
+
+function InitModules(Bot, List) {
+	foreach (P in List) {
+		Name = P.Value;
+		Module = Static.Poly.Bot.Modules[Name];
+
+		if (!Module) {
+			Module = Poly.Bot[Name]();
+		}
+
+		Module.Init(Bot);		
+	}
+}
