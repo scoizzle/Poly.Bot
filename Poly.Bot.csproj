@@ -65,6 +65,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Bots\Bot.example">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Bots\Sourced.psx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

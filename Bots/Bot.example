@@ -14,4 +14,9 @@ InitModules(MyBot, [
 	'Command', 'Youtube', 'ConsoleLog', 'Auth', 'Eval'
 ]);
 
+MyBot.On('Connected', () => {
+	// this is MyBot
+	MyBot.JoinChannel('#channel');
+});
+
 MyBot.Start();
