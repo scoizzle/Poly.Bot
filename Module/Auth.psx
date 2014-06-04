@@ -16,10 +16,6 @@
 		Cmd.OnHandlerCommand('!login {Username} {Password}', 'Auth', 'Login');
 		Cmd.OnHandlerCommand('!logout', 'Auth', 'Logout');
 
-		Cmd.On('!reload {Name}', () => {
-			ReloadModule(Name);
-		});
-
 		Bot.UserConfig = Load(Bot.UserConfigFile);
 
 		if (!Bot.UserConfig)
