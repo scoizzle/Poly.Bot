@@ -16,7 +16,7 @@ InitModules(MyBot, [
 
 MyBot.On('Connected', () => {
 	// this is MyBot
-	MyBot.JoinChannel('#channel');
+	this.JoinChannel('#channel');
 });
 
 MyBot.Start();

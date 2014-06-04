@@ -9,6 +9,14 @@ function SetModule(Name, Value) {
 	Static.Poly.Bot.Modules[Name] = Value;
 }
 
+function LoadModule(Name) {
+	include_live 'Module/' + Name + '.psx';
+}
+
+function ReloadModule(Name) {
+	reload 'Module/' + Name + '.psx';
+}
+
 function GetHandler(Name) {
 	return Static.Poly.Bot.Handlers[Name];
 }
@@ -47,6 +55,12 @@ function InitModules(Bot, List) {
 
 		if (!Module) {
 			Module = Poly.Bot[Name]();
+
+			if (!Module){
+				LoadModule(Name);
+				
+				Module = Poly.Bot[Name]();
+			}
 		}
 
 		Module.Init(Bot);		
