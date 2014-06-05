@@ -2,6 +2,8 @@
 	function Weather() {
 		this.Module("Weather");
 
+		this.APIKey = '6039206c63c1ca5a';
+
 		this.Format = '{forecast.txt_forecast.forecastday.0}Forecast for {title}: {fcttext}{/forecast.txt_forecast.forecastday.0}';
 		this.FormatExtended = '{forecast.txt_forecast.forecastday}Forecast for {title}: {fcttext}\r\n{/forecast.txt_forecast.forecastday}';
 	}
@@ -9,44 +11,56 @@
 	function Init() {
 		Cmd = this.GetHandler("Cmd");
 		
-		Cmd.On("!w set {City}, {State}", this.OnSetLocation);
-		Cmd.On("!w {City}, {State}", this.OnWeather);
-		Cmd.On("!w {Zip}")
-		Cmd.On("!w", this.OnWeather);
+		Cmd.On("!w[->{Flag} ] set {City}, {State}", this.OnSetLocation);
+		Cmd.On("!w[->{Flag} ] {City}, {State}", this.OnWeather);
+		Cmd.On("!w[->{Flag} ] {Zip}");
+		Cmd.On("!w[->{Flag}]", this.OnWeather);
 	}
 
-	function GetWeather(State, City) {
+	function QueryAPI(Path) {
+		Result = Http.Get('http://api.wunderground.com/api/' + this.APIKey + Path);
+		Result = Result.ToObject();
+
+		return Result;
+	}
+
+	function GetWeather(State, City, Format) {
 		Mod = GetModule('Weather');
 		
-		Result = Http.Get('http://api.wunderground.com/api/6039206c63c1ca5a/forecast/q/' + State + '/' + City + '.json');
-		Result = Result.ToObject();
+		Result = Mod.QueryAPI('/forecast/q/' + State + '/' + City + '.json');
 
-		return Result.Template(Mod.Format);
+		return Result.Template(Format);
 	}
 
-	function GetWeatherZip(Zip) {
+	function GetWeatherZip(Zip, Format) {
 		Mod = GetModule('Weather');
 
-		Result = Http.Get('http://api.wunderground.com/api/6039206c63c1ca5a/forecast/q/' + Zip.ToString() + '.json');
-		Result = Result.ToObject();
+		Result = Mod.QueryAPI('/forecast/q/' + Zip.ToString() + '.json');
 
-		return Result.Template(Mod.Format);
+		return Result.Template(Format);
 	}
 
 	function OnWeather() {
 		Mod = GetModule('Weather');
 
+		if (Flag == 'ext'){
+			Format = Mod.FormatExtended;
+		}
+		else {
+			Format = Mod.Format;
+		}
+
 		if (City && State) {
-			Weather = Mod.GetWeather(State, City);
+			Weather = Mod.GetWeather(State, City, Format);
 			this.SendMessage(Convo, 'Weather for ' + City + ', ' + State + ' ' + Weather);
 		}
 		else if (Zip) {
-			this.SendMessage(Convo, Mod.GetWeatherZip(Zip));
+			this.SendMessage(Convo, Mod.GetWeatherZip(Zip, Format));
 		}
 		else if (User.Auth.Weather) {
 			Info = User.Auth.Weather;
 
-			this.SendMessage(Convo, Mod.GetWeather(Info.State, Info.City));
+			this.SendMessage(Convo, Mod.GetWeather(Info.State, Info.City, Format));
 		}
 		else {
 			this.SendMessage(Convo, 'Not a valid location!\r\nUsage: !w {City}, {State}\r\nOr Login and save your location: !w set {City}, {State}');
