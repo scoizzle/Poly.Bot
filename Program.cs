@@ -16,6 +16,7 @@ namespace Poly.Bot {
     public class Program : App {
         static void Main(string[] args) {
             var Engine = new Script.Engine();
+
             App.Init(Log.Levels.Info);
 
             if (File.Exists("Config.psx")) {

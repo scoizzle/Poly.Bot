@@ -13,7 +13,7 @@
 		
 		Cmd.On("!w[->{Flag} ] set {City}, {State}", this.OnSetLocation);
 		Cmd.On("!w[->{Flag} ] {City}, {State}", this.OnWeather);
-		Cmd.On("!w[->{Flag} ] {Zip}");
+		Cmd.On("!w[->{Flag} ] {Zip}", this.OnWeather);
 		Cmd.On("!w[->{Flag}]", this.OnWeather);
 	}
 
