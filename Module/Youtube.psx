@@ -1,30 +1,23 @@
 ﻿class Poly.Bot.Youtube : Poly.Bot.Module {
 	function Youtube() {
 		this.Module("Youtube");
-		this.Format = '\\[Youtube\\] Title: {title}';
+		this.Format = '\\[Youtube\\] {title} ({durationString})\r\nUploaded by {uploader}, {timeSinceUpload} ago, Views {viewCount}, Current Rating {rating}/5';
 	}
 
 	function Init() {
-		Cmd = this.GetHandler("Cmd");
+		Url = this.GetHandler("Url");
 
-		Cmd.On("*http*://{Host}/{Request}", this.OnLink);
+		Url.On('youtube.com', this.OnLink);
+		Url.On('youtu.be', this.OnLink);
 	}
 
 	function OnLink() {
 		Mod = GetModule('Youtube');
 
-		if (Request) {
-			if (Request.Contains(" ")) {
-				Request = Request.Substring("", " ");
-			}
-		}
-
-		Url = Url("http://" + Host + "/" + Request);	
-
-		if (Url.Host.Contains('youtube.com')) {
+		if (Host.Contains('youtube.com')) {
 			Mod.OnYoutube(this, Convo, Url.Query.v, Mod.Format);
 		}
-		else if (Url.Host.Contains('youtu.be')) {
+		else if (Host.Contains('youtu.be')) {
 			Mod.OnYoutube(this, Convo, Url.Path, Mod.Format);
 		}
 	}
@@ -32,6 +25,15 @@
 	function OnYoutube(Bot, Convo, V, Format) {
 		Result = Http.Get('http://gdata.youtube.com/feeds/api/videos/' + V + '?v=2&alt=jsonc');
 		Result = Result.ToObject();
+
+		Uploaded = Time.Parse(Result.data.uploaded);
+		Uploaded = Time.Now.Subtract(Uploaded);
+		Duration = TimeSpan.FromSeconds(Result.data.duration);
+
+		Result.data.timeSinceUpload = Uploaded.ToDurationString();
+		Result.data.durationString = Duration.ToDurationString();
+
+		Result.data.rating = Math.Round(Result.data.rating, 1);
 
 		Bot.SendMessage(Convo, Result.data.Template(Format));
 	}

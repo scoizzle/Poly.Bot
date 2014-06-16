@@ -1,0 +1,47 @@
+﻿class Poly.Bot.Url : Poly.Bot.Module {
+	function Url() {
+		if (this.Module('Url')){
+			this.Handlers = [];
+			this.Handles('Url');
+		}
+	}
+
+	function Init() {
+		Cmd = GetHandler("Cmd");
+		
+		Cmd.On("*http*://{Host}/{Request}", this.OnLink);
+	}
+
+	function On(Host, Handler) {
+		Key = Hash.MD5(Host);
+
+		if (!this.Handlers.ContainsKey(Key)) {
+			Obj.Host = Host;
+			Obj.Handler = Handler;
+
+			this.Handlers[Key] = Obj;
+		}
+	}
+
+	function OnLink() {
+		Url = GetHandler('Url');
+
+		foreach (Handler in Url.Handlers) {
+			Log.Info(Handler);
+			if (Host.Contains(Handler.Value.Host)) {
+				Log.Info(Handler);
+				Args.Url = Url('http://' + Host + '/' + Request);
+
+				Args.this = this;
+				Args.Convo = Convo;
+				Args.User = User;
+				Args.Message = Message;
+				Args.Host = Host;
+				Args.Request = Request;
+
+				Events.Invoke(Handler.Value.Handler, Args);
+				break;
+			}
+		}
+	}
+}

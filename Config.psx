@@ -2,6 +2,6 @@
 
 include "src/Module.psx";
 include "src/Command.psx";
-include "src/*.psx";
+include "src/Url.psx";
 
 include "Bots/*.psx";
