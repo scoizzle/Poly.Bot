@@ -6,6 +6,14 @@ class Poly.Bot.Command : Poly.Bot.Module {
 			this.Bots = [ ];
 			this.Commands = [ ];
 			this.Handles('Cmd');
+
+			this.On('!cmdlist', () => {
+				Cmd = GetHandler('Cmd');
+				
+				foreach (C in Cmd.Commands) {
+					this.SendNotice(User, C.Key);
+				}
+			});
 		}
 	}
 

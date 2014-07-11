@@ -13,7 +13,6 @@
 		
 		Cmd.On("!w[->{Flag} ] set {City}, {State}", this.OnSetLocation);
 		Cmd.On("!w[->{Flag} ] {City}, {State}", this.OnWeather);
-		Cmd.On("!w[->{Flag} ] {Zip}", this.OnWeather);
 		Cmd.On("!w[->{Flag}]", this.OnWeather);
 	}
 
@@ -28,14 +27,6 @@
 		Mod = GetModule('Weather');
 		
 		Result = Mod.QueryAPI('/forecast/q/' + State + '/' + City + '.json');
-
-		return Result.Template(Format);
-	}
-
-	function GetWeatherZip(Zip, Format) {
-		Mod = GetModule('Weather');
-
-		Result = Mod.QueryAPI('/forecast/q/' + Zip.ToString() + '.json');
 
 		return Result.Template(Format);
 	}
@@ -55,7 +46,8 @@
 			this.SendMessage(Convo, 'Weather for ' + City + ', ' + State + ' ' + Weather);
 		}
 		else if (Zip) {
-			this.SendMessage(Convo, Mod.GetWeatherZip(Zip, Format));
+			Weather = Mod.GetWeatherZip(Zip, Format);
+			this.SendMessage(Convo, Weather);
 		}
 		else if (User.Auth.Weather) {
 			Info = User.Auth.Weather;
