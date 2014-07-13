@@ -45,10 +45,6 @@
 			Weather = Mod.GetWeather(State, City, Format);
 			this.SendMessage(Convo, 'Weather for ' + City + ', ' + State + ' ' + Weather);
 		}
-		else if (Zip) {
-			Weather = Mod.GetWeatherZip(Zip, Format);
-			this.SendMessage(Convo, Weather);
-		}
 		else if (User.Auth.Weather) {
 			Info = User.Auth.Weather;
 

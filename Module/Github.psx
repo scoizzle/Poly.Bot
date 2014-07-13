@@ -1,11 +1,4 @@
-﻿using Direct = System.IO.Directory;
-
-class RepoInfo {
-	Name = 'Poly';
-	Owner = 'scoizzle';
-	Channel = '#scoizzle';
-	AccessToken = '1e4d005f6be64eeaa64e454cfc3cd7c66923394a';
-
+﻿class RepoInfo {
 	function RepoInfo(Name, Owner, Channel, Token) {
 		this.Name = Name;
 		this.Owner = Owner;
@@ -22,6 +15,9 @@ class Poly.Bot.Github : Poly.Bot.Module {
 		
 		this.AccessToken = ;
 		this.CommitTemplate = 'Commit by {commit.author.name}, {sha}\r\n{commit.message}';
+
+		this.NewIssueTemplate = 'New issue {title} by {user.login} is currently {state}\r\n{body}';
+		this.IssueUpdateTemplate = 'Issue {title} by {user.login} is now {state}!';
 	}
 
 	function Init(Bot) {
@@ -51,16 +47,16 @@ class Poly.Bot.Github : Poly.Bot.Module {
 
 		Bot.GithubConfig.Save(Bot.GithubConfigPath + 'Repos.json');
 	}
-
-	function GetRepoPath(Bot, Repo) {
-		return Bot.GithubConfigPath + Repo.Owner + '.' + Repo.Name + '/';
-	}
 	
-	function Poll(Url, AccessToken) {
+	function Poll(Url, AccessToken, Heads) {
 		Headers = { 'User-Agent': 'Poly.Bot.Github' };
 
 		if (AccessToken) {
 			Headers.Authorization = 'token ' + AccessToken;
+		}
+
+		if (Heads) {
+			Heads.CopyTo(Headers);
 		}
 
 		Url = Http.Escape(Url);
@@ -75,8 +71,23 @@ class Poly.Bot.Github : Poly.Bot.Module {
 		return Result;
 	}
 
+	function PollNewCommits(Owner, Repo, AccessToken, Since) {
+		Result = this.Poll('/repos/' + Owner + '/' + Repo + '/commits?since=' + Since, AccessToken);
+		return Result;
+	}
+	
 	function PollIssues(Owner, Repo, AccessToken) {
 		Result = this.Poll('/repos/' + Owner + '/' + Repo + '/issues', AccessToken);
+		return Result;
+	}
+
+	function PollOpenIssues(Owner, Repo, AccessToken, Since) {
+		Result = this.Poll('/repos/' + Owner + '/' + Repo + '/issues?state=open&since=' + Since, AccessToken);
+		return Result;
+	}
+
+	function PollClosedIssues(Owner, Repo, AccessToken, Since) {
+		Result = this.Poll('/repos/' + Owner + '/' + Repo + '/issues?state=closed&since=' + Since, AccessToken);
 		return Result;
 	}
 
@@ -85,37 +96,35 @@ class Poly.Bot.Github : Poly.Bot.Module {
 			foreach (Repo in Bot.GithubConfig) {
 				Repo = Repo.Value;
 				RepoPath = this.GetRepoPath(Bot, Repo);
-				Commits = this.PollCommits(Repo.Owner, Repo.Name, Repo.AccessToken);
 
-				if (Commits.message) {
-					Log.Error(Commits.message);
-					break;
-				}
+				if (Repo.LastPollTime) {		
+					Commits = this.PollNewCommits(Repo.Owner, Repo.Name, Repo.AccessToken, Repo.LastPollTime);
 
-				if (Commits) {
-					Commits.Save(RepoPath + 'Commits.json');
-
-					Latest = Commits[0];
-
-					if (Latest.sha != Repo.LastKnownSha) {
+					if (Commits) {
 						foreach (Item in Commits) {
-							Com = Item.Value;
+							Bot.SendMessage(Repo.Channel, Item.Value.Template(this.CommitTemplate));						
+						}
+					}		
 
-							if (Com.sha == Repo.LastKnownSha)
-								break;
+					NewIssues = this.PollOpenIssues(Repo.Owner, Repo.Name, Repo.AccessToken, Repo.LastPollTime);
 
-							Bot.SendMessage(Repo.Channel, Com.Template(this.CommitTemplate));						
+					if (NewIssues) {
+						foreach (Item in NewIssues){
+							Bot.SendMessage(Repo.Channel, Item.Value.Template(this.NewIssueTemplate));
 						}
 					}
 
-					Repo.LastKnownSha = Latest.sha;
-					this.SaveConfig(Bot);
+					ClosedIssues = this.PollClosedIssues(Repo.Owner, Repo.Name, Repo.AccessToken, Repo.LastPollTime);
+
+					if (ClosedIssues) {
+						foreach (Item in ClosedIssues){
+							Bot.SendMessage(Repo.Channel, Item.Value.Template(this.IssueUpdateTemplate));
+						}
+					}
 				}
 
-				Issues = this.PollIssues(Repo.Owner, Repo.Name, Repo.AccessToken);
-
-				if (Issues) {
-				}
+				Repo.LastPollTime = Time.UtcNow.ToString('yyyy-MM-ddTHH:mm:ssK');
+				this.SaveConfig(Bot);
 			}
 
 			Sleep(30000);
@@ -130,24 +139,6 @@ class Poly.Bot.Github : Poly.Bot.Module {
 	function AddRepo() {
 		Mod = GetModule('Github');
 		Info = RepoInfo(Repo, Owner, Target);
-		Path = Mod.GetRepoPath(this, Info);
-
-		if (!Direct.Exists(Path)) {
-			Direct.CreateDirectory(Path);
-		}
-		
-		Commits = Mod.PollCommits(Info.Owner, Info.Name, Info.AccessToken);
-		Issues = Mod.PollIssues(Info.Owner, Info.Name, Info.AccessToken);
-
-		Latest = Commits[0];
-
-		if (Latest) {
-			Info.LastKnownSha = Latest.sha;
-			this.SendMessage(Repo.Channel, Latest.Template(Mod.CommitTemplate));
-		}
-
-		Commits.Save(Path + 'Commits.json');
-		Issues.Save(Path + 'Issues.json');
 
 		this.GithubConfig + Info.ToObject();
 		Mod.SaveConfig(this);
