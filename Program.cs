@@ -15,7 +15,7 @@ using Poly.Script;
 namespace Poly.Bot {
     public class Program : App {
         static void Main(string[] args) {
-            App.Init(Log.Levels.Info);
+            App.Init(Log.Levels.Info, args);
             var Engine = new Script.Engine();
 
             if (File.Exists("Config.psx")) {
@@ -24,9 +24,8 @@ namespace Poly.Bot {
                 }
             }
 
-            while (App.Running) {
-                Console.ReadLine();
-            }
+
+            while (App.Running) { }
         }
     }
 }   

@@ -1,4 +1,6 @@
-﻿class RepoInfo {
+﻿using Dir = System.IO.Directory;
+
+class RepoInfo {
 	function RepoInfo(Name, Owner, Channel, Token) {
 		this.Name = Name;
 		this.Owner = Owner;
@@ -26,6 +28,10 @@ class Poly.Bot.Github : Poly.Bot.Module {
 			return;
 		}
 
+		if (!Dir.Exists(Bot.GithubConfigPath)){
+			Dir.CreateDirectory(Bot.GithubConfigPath);
+		}
+
 		Bot.GithubConfig = Load(Bot.GithubConfigPath + 'Repos.json');
 
 		if (!Bot.GithubConfig) {
@@ -43,6 +49,10 @@ class Poly.Bot.Github : Poly.Bot.Module {
 		if (!Bot.GithubConfigPath) {
 			Log.Error('No GithubConfigPath specified for ' + Bot.Ident);
 			return;
+		}
+		
+		if (!Dir.Exists(Bot.GithubConfigPath)){
+			Dir.CreateDirectory(Bot.GithubConfigPath);
 		}
 
 		Bot.GithubConfig.Save(Bot.GithubConfigPath + 'Repos.json');
