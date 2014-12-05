@@ -18,7 +18,7 @@ class Poly.Bot.Command : Poly.Bot.Module {
 	}
 
 	function Init(Bot) {
-		Bot.On('Msg', this.Handle);
+		Bot.On('Msg', this.Handle); 
 		Bot.On('Notice', this.Handle);
 	}
 
@@ -28,7 +28,7 @@ class Poly.Bot.Command : Poly.Bot.Module {
 		foreach (C in Cmd.Commands) {
 			Data = Packet.Message.Match(C.Key);
 
-			if (Data != null) {
+			if (Data) {
 				Data.Convo = Convo;
 				Data.User = User;
 				Data.Packet = Packet;

@@ -36,7 +36,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -45,6 +46,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <Externalconsole>true</Externalconsole>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Poly.Bot.Program</StartupObject>
@@ -67,28 +69,37 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Bots\Sourced.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Bots\KFur.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Config.psx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Module\Auth.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Module\ConsoleLog.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Module\Github.psx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Module\Weather.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Module\Youtube.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scom.Config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scom\Sql.psx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scom\UserManager.psx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="src\Command.psx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -97,10 +108,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Module\AutoJoin.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Module\Eval.psx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="src\Url.psx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -115,6 +126,10 @@
   </Target>
   -->
   <ItemGroup>
+    <ProjectReference Include="..\Poly.Script.MySQL\Poly.Script.MySQL.csproj">
+      <Project>{3E937957-E7FD-4E06-B7E2-DF9D3830A44C}</Project>
+      <Name>Poly.Script.MySQL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Poly\Poly.csproj">
       <Project>{A96DCAEF-F18A-4EA4-9AEA-1596A8E1DACF}</Project>
       <Name>Poly</Name>

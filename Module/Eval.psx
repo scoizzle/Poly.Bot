@@ -6,22 +6,17 @@ class Poly.Bot.Eval : Poly.Bot.Module {
 	}
 
 	function Init() {
-		Cmd = this.GetHandler("Cmd");
+		Cmd = GetHandler("Cmd");
 
-		Cmd.On("`{Script}", this.OnEval);
+		if (App.IsRunningOnMono())
+			Cmd.On("${Script}", this.OnEval);
+		else 
+			Cmd.On("~{Script}", this.OnEval);			
 	}
 
 	function OnEval() {
-		Context = { };
-
-		Context.Bot = this;
-		Context.User = User;
-		Context.Convo = Convo;
-
-		StartTime = Time.Now.Ticks;
-
 		Thread = async(7000) {
-			Ret = Psx.Eval(Script, Context);
+			Ret = Psx.Eval(Script, _);
 		};
 
 		if (Ret && !Ret.StartsWith('!'))

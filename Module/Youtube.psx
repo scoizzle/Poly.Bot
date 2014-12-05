@@ -1,7 +1,8 @@
 ﻿class Poly.Bot.Youtube : Poly.Bot.Module {
 	function Youtube() {
-		this.Module("Youtube");
-		this.Format = '\\[Youtube\\] {title} ({durationString})\r\nUploaded by {uploader}, {timeSinceUpload} ago, Views {viewCount}, Current Rating {rating}/5';
+		if (this.Module("Youtube")) {
+			this.Format = '\\[Youtube\\] {title} ({durationString})\r\nUploaded by {uploader}, {timeSinceUpload} ago, Views {viewCount}, Current Rating {rating}/5';
+		}
 	}
 
 	function Init() {
@@ -23,18 +24,22 @@
 	}
 	
 	function OnYoutube(Bot, Convo, V, Format) {
+		if (!V)
+			return;
+		
 		Result = Http.Get('http://gdata.youtube.com/feeds/api/videos/' + V + '?v=2&alt=jsonc');
 		Result = Result.ToObject();
 
 		Uploaded = Time.Parse(Result.data.uploaded);
 		Uploaded = Time.Now.Subtract(Uploaded);
+
+		File.WriteAllText('log.log', _.ToString());
 		Duration = TimeSpan.FromSeconds(Result.data.duration);
 
 		Result.data.timeSinceUpload = Uploaded.ToDurationString();
 		Result.data.durationString = Duration.ToDurationString();
 
-		Result.data.rating = Math.Round(Result.data.rating, 1);
-
+		Result.data.rating = Math.Round(Convert.ToDouble(Result.data.rating), 1);
 		Bot.SendMessage(Convo, Result.data.Template(Format));
 	}
 }

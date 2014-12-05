@@ -27,19 +27,10 @@
 		Url = GetHandler('Url');
 
 		foreach (Handler in Url.Handlers) {
-			Log.Info(Handler);
 			if (Host.Contains(Handler.Value.Host)) {
-				Log.Info(Handler);
-				Args.Url = Url('http://' + Host + '/' + Request);
+				Url = Url('http://' + Host + '/' + Request);
 
-				Args.this = this;
-				Args.Convo = Convo;
-				Args.User = User;
-				Args.Message = Message;
-				Args.Host = Host;
-				Args.Request = Request;
-
-				Events.Invoke(Handler.Value.Handler, Args);
+				Event.Invoke(Handler.Value.Handler, _);
 				break;
 			}
 		}

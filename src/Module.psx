@@ -51,16 +51,11 @@ class Poly.Bot.Module {
 function InitModules(Bot, List) {
 	foreach (P in List) {
 		Name = P.Value;
-		Module = Static.Poly.Bot.Modules[Name];
+		Module = GetModule(Name);
 
 		if (!Module) {
+			LoadModule(Name);
 			Module = Poly.Bot[Name]();
-
-			if (!Module){
-				LoadModule(Name);
-				
-				Module = Poly.Bot[Name]();
-			}
 		}
 
 		Module.Init(Bot);		
