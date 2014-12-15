@@ -8,8 +8,7 @@
 	function Init() {
 		Url = this.GetHandler("Url");
 
-		Url.On('youtube.com', this.OnLink);
-		Url.On('youtu.be', this.OnLink);
+		Url.On(['youtube.com', 'youtu.be'], this.OnLink);
 	}
 
 	function OnLink() {
@@ -33,8 +32,7 @@
 		Uploaded = Time.Parse(Result.data.uploaded);
 		Uploaded = Time.Now.Subtract(Uploaded);
 
-		File.WriteAllText('log.log', _.ToString());
-		Duration = TimeSpan.FromSeconds(Result.data.duration);
+		Duration = TimeSpan.FromSeconds(Convert.ToDouble(Result.data.duration));
 
 		Result.data.timeSinceUpload = Uploaded.ToDurationString();
 		Result.data.durationString = Duration.ToDurationString();

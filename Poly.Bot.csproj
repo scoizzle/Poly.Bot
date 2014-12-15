@@ -126,10 +126,6 @@
   </Target>
   -->
   <ItemGroup>
-    <ProjectReference Include="..\Poly.Script.MySQL\Poly.Script.MySQL.csproj">
-      <Project>{3E937957-E7FD-4E06-B7E2-DF9D3830A44C}</Project>
-      <Name>Poly.Script.MySQL</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Poly\Poly.csproj">
       <Project>{A96DCAEF-F18A-4EA4-9AEA-1596A8E1DACF}</Project>
       <Name>Poly</Name>

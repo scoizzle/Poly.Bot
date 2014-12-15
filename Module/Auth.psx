@@ -1,7 +1,7 @@
 ﻿class Poly.Bot.Auth : Poly.Bot.Module {
 	function Auth() {
-		this.Module('Auth');
-		this.Handles('Auth');
+		if (this.Module('Auth'))
+			this.Handles('Auth');
 	}
 
 	function Init(Bot) {
@@ -10,7 +10,7 @@
 			return;
 		}
 
-		Cmd = this.GetHandler('Cmd'); // Get Command Module
+		Cmd = this.GetHandler('Cmd');
 		
 		Cmd.OnHandlerCommand('!register {Username} {Password}', 'Auth', 'Register');
 		Cmd.OnHandlerCommand('!login {Username} {Password}', 'Auth', 'Login');
@@ -22,7 +22,7 @@
 			Bot.UserConfig = { };
 	}
 
-	function Register() {
+	function Register(Username, Password) {
 		if ((!Username) || (!Password)) {
 			this.SendMessage(Convo, 'Invalid Username or Password!');
 			return;

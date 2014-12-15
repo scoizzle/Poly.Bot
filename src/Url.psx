@@ -13,6 +13,14 @@
 	}
 
 	function On(Host, Handler) {
+		if (Host.IsArray) {
+			foreach (H in Host) {
+				this.On(H.Value, Handler);
+			}
+
+			return;
+		}
+
 		Key = Hash.MD5(Host);
 
 		if (!this.Handlers.ContainsKey(Key)) {
@@ -25,6 +33,9 @@
 
 	function OnLink() {
 		Url = GetHandler('Url');
+
+		if (Request.Contains(' '))
+			Request = Request.Substring(0, Request.IndexOf(' '))
 
 		foreach (Handler in Url.Handlers) {
 			if (Host.Contains(Handler.Value.Host)) {
