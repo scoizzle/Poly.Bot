@@ -1,0 +1,140 @@
+﻿using MySql.Data;
+using Client = MySql.Data.MySqlClient.MySqlConnection;
+using Command = MySql.Data.MySqlClient.MySqlCommand;
+using ParamCollection = MySql.Data.MySqlClient.MySqlParameterCollection;
+
+class MySqlConnection {
+	func MySqlConnection(Server, User, Pass, Database, Port) {
+		ConnectionString = _.Template('server={Server};userid={User};password={Pass}');
+
+		if (Port)
+			ConnectionString += _.Template(';port={Port}');
+		
+		if (Database) 
+			ConnectionString += _.Template(';database={Database}');
+
+		this.ConState = Enum:System.Data.ConnectionState;
+		this.Connection = Client.MySqlConnection(ConnectionString);
+
+		try 
+			this.Connection.Open();
+		catch 
+			App.Log.Info(Error.ToString());
+	}
+
+	func Connected() {
+		if (!this.Connection)
+			return false;
+
+		return this.Connection.State == this.ConState.Open;
+	}
+
+	func Wait(Delay) {
+		for (Ticks; 0 -> Delay) {
+			if (this.Connected())
+				return true;
+
+			Sleep(1);
+		}
+
+		return false;
+	}
+
+	func Execute(Cmd, Params) {
+		Cmd = Command.MySqlCommand(Cmd, this.Connection);
+
+		if (Params) {
+			foreach (p in Params) {
+				[Cmd.Parameters as ParamCollection].AddWithValue('@' + p.Key, p.Value.ToString());
+			}
+		}
+
+		try {
+			Cmd.Prepare();
+			return Cmd.ExecuteNonQuery();
+		}
+		catch {
+			Log.Error(Error.ToString());
+			return false;
+		}
+	}
+
+	func Query(Cmd, Params, Handler) {
+		Cmd = Command.MySqlCommand(Cmd, this.Connection);
+		
+		if (Params) {
+			foreach (p in Params) {
+				[Cmd.Parameters as ParamCollection].AddWithValue('@' + p.Key, p.Value.ToString());
+			}
+		}
+		
+        if (!Cmd.IsPrepared) {
+            Cmd.Prepare();
+        }
+
+		try 
+			Reader = Cmd.ExecuteReader();
+		catch 
+			return false;
+
+		if (!Reader)
+			return false;
+
+		while (Reader.Read()) {
+			Args = { };
+
+			for (i; 0 -> Reader.FieldCount) {
+				Name = Reader.GetName(i);
+				Value = Reader.GetValue(i);
+
+				Args[Name] = Value;
+			}
+
+			Event.Invoke(Handler, Args);
+		}
+		
+		Reader.Close();
+		return true;
+	}
+	
+	func Get(Cmd, Params) {
+		try {
+			Cmd = Command.MySqlCommand(Cmd, this.Connection);
+		
+			if (Params) {
+				foreach (p in Params) {
+					[Cmd.Parameters as ParamCollection].AddWithValue('@' + p.Key, p.Value.ToString());
+				}
+			}
+		
+			if (!Cmd.IsPrepared) {
+				Cmd.Prepare();
+			}
+		
+			Reader = Cmd.ExecuteReader();
+
+			if (!Reader)
+				return false;
+
+			if (Reader.Read()) {
+				Args = { };
+
+				for (i; 0 -> Reader.FieldCount - 1) {
+					Name = Reader.GetName(i);
+					Value = Reader.GetValue(i);
+
+					Args[Name] = Value;
+				}
+				
+				Reader.Close();
+				return Args;
+			}
+			
+			Reader.Close();
+			return false;
+		}
+		catch {
+			Log.Error(Error.ToString());
+		}
+	}
+}

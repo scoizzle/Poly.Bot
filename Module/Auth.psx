@@ -1,90 +1,46 @@
 ﻿class Poly.Bot.Auth : Poly.Bot.Module {
-	function Auth() {
-		if (this.Module('Auth'))
-			this.Handles('Auth');
+	func Auth(Bot) {
+		if (this.Module(Bot, 'Auth', ['MySql', 'MySqlAuth'])) {
+			Bot.Commands.On('!register {username} {email} {password}', this.Register);
+			Bot.Commands.On('!login {username} {password}', this.Login);
+			Bot.Commands.On('!logout', this.Logout);
+		}
 	}
 
-	function Init(Bot) {
-		if (!Bot.UserConfigFile) {
-			Log.Error('No UserConfigFile specified for ' + Bot.Ident);
-			return;
+	function Register() {
+		if (User.Info)
+			Info = User.Info;
+		else
+			Info = Bot.Modules.MySqlAuth.RegisterUser(username, username, password, email);
+
+		if (Info) {
+			Bot.SendMessage(Convo, 'Thank you for registering!');
+
+			User.Info = Info;
 		}
-
-		Cmd = this.GetHandler('Cmd');
-		
-		Cmd.OnHandlerCommand('!register {Username} {Password}', 'Auth', 'Register');
-		Cmd.OnHandlerCommand('!login {Username} {Password}', 'Auth', 'Login');
-		Cmd.OnHandlerCommand('!logout', 'Auth', 'Logout');
-
-		Bot.UserConfig = Load(Bot.UserConfigFile);
-
-		if (!Bot.UserConfig)
-			Bot.UserConfig = { };
-	}
-
-	function Register(Username, Password) {
-		if ((!Username) || (!Password)) {
-			this.SendMessage(Convo, 'Invalid Username or Password!');
-			return;
+		else {
+			Bot.SendMessage(Convo, 'Something went wrong... try another username!');
 		}
-
-		if (this.UserConfig[Username]){
-			this.SendMessage(Convo, 'User already exists!');
-			return;
-		}
-
-		U.Username = Username;
-		U.Password = Hash.SHA256(Password);
-		U.Display = User.Nick;
-
-		this.UserConfig[Username] = U;
-		this.UserConfig.Save(this.UserConfigFile);
 	}
 
 	function Login() {
-		if ((!Username) || (!Password)) {
-			this.SendMessage(Convo, 'Invalid Username or Password!');
-			return;
+		if (User.Info)
+			Info = User.Info;
+		else
+			Info = Bot.Modules.MySqlAuth.AuthenticateUser(username, password);
+
+		if (Info) {
+			Bot.SendMessage(Convo, _.Template('Hi {Info.Display}!'));
+
+			User.Info = Info;
 		}
-
-		if (!this.UserConfig[Username]){
-			this.SendMessage(Convo, 'User does not exist!');
-			return;
+		else {
+			Bot.SendMessage(Convo, 'I could\'t seem to find you... maybe you had the wrong password?');
 		}
-
-		U = this.UserConfig[Username];
-
-		if (U.Username == Username) {
-			if (U.Password == Hash.SHA256(Password)) {
-				User.Auth = U;
-
-				this.SendMessage(Convo, 'Welcome ' + U.Display + '!');
-				return U;
-			}
-		}
-
-		this.SendMessage(Convo, 'Invalid Username or Password!');
 	}
 
 	function Logout() {
-		if (User.Auth) {
-			User.Auth = null;
-		}
-
-		this.SendMessage(Convo, "Bye bye :(");
-	}
-
-	function GetUserInfo(Bot, Username) {
-		if (!Bot.UserConfig[Username]){
-			return false;
-		}
-
-		U = Bot.UserConfig[Username];
-		return U;
-	}
-
-	function SaveUserInfo(Bot, Username, Info) {
-		Bot.UserConfig[Username] = Info;
-		Bot.UserConfig.Save(Bot.UserConfigFile);
+		User.Info = null;
+		Bot.SendMessage(Convo, 'Bye bye!');
 	}
 }

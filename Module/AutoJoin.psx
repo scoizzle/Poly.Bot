@@ -1,20 +1,15 @@
 ﻿class Poly.Bot.AutoJoin : Poly.Bot.Module {
-	function AutoJoin() {
-		this.Module("AutoJoin");
-	}
-
-	function Init(Bot) {
-		Bot.On('Connected', this.OnConnected);
+	function AutoJoin(Bot) {
+		if (this.Module(Bot, 'AutoJoin')){
+			Bot.On('Connected', this.OnConnected);
+		}
 	}
 
 	function OnConnected() {
-		foreach (Chan in this.AutoJoin) {
-			Pass = Chan.Value.Password;
+		Sleep(5000);
 
-			if (!Pass)
-				Pass = '';
-
-			this.JoinChannel(Chan.Key, Pass);
+		foreach (Chan in Bot.AutoJoin) {			
+			Bot.JoinChannel(Chan.Key, Chan.Value);
 		}
 	}
 }

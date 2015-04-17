@@ -1,49 +1,29 @@
 ﻿class Poly.Bot.Url : Poly.Bot.Module {
-	function Url() {
-		if (this.Module('Url')){
-			this.Handlers = [];
-			this.Handles('Url');
+	function Url(Bot) {
+		if (this.Module(Bot, 'Url')){
+			this.Handlers = Events.Engine();
+
+			Bot.Commands.On("*http*://{Host}/{Request}", this.OnLink);
 		}
 	}
-
-	function Init() {
-		Cmd = GetHandler("Cmd");
-		
-		Cmd.On("*http*://{Host}/{Request}", this.OnLink);
-	}
-
+	
 	function On(Host, Handler) {
 		if (Host.IsArray) {
 			foreach (H in Host) {
 				this.On(H.Value, Handler);
 			}
-
-			return;
 		}
-
-		Key = Hash.MD5(Host);
-
-		if (!this.Handlers.ContainsKey(Key)) {
-			Obj.Host = Host;
-			Obj.Handler = Handler;
-
-			this.Handlers[Key] = Obj;
+		else {
+			this.Handlers.Register(Host, Handler);
 		}
 	}
 
 	function OnLink() {
-		Url = GetHandler('Url');
-
 		if (Request.Contains(' '))
-			Request = Request.Substring(0, Request.IndexOf(' '))
-
-		foreach (Handler in Url.Handlers) {
-			if (Host.Contains(Handler.Value.Host)) {
-				Url = Url('http://' + Host + '/' + Request);
-
-				Event.Invoke(Handler.Value.Handler, _);
-				break;
-			}
-		}
+			Request = Request.Substring(0, Request.IndexOf(' '));
+			
+		Url = Url('http://' + Host + '/' + Request);
+		
+		Bot.Modules.Url.Handlers.MatchAndInvoke(Host, _, true);
 	}
 }

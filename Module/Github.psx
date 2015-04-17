@@ -70,8 +70,10 @@ class Poly.Bot.Github : Poly.Bot.Module {
 		}
 
 		Url = Http.Escape(Url);
-		Result = Http.Get('https://api.github.com' + Url, Headers);
-		Result = Result.ToObject();
+		try {
+			Result = Http.Get('https://api.github.com' + Url, Headers);
+			Result = Result.ToObject();
+		}
 
 		return Result;
 	}

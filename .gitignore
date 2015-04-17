@@ -218,5 +218,7 @@ Poly.userprefs
 
 Scom/*
 Bots/*.psx
+Module/*MySql*
 *.userprefs
-Scom.Config.json
+*.Config.json
+*.mdb

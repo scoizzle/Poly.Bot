@@ -1,63 +1,64 @@
-﻿if (!Static.Poly.Bot.Modules)
-	Static.Poly.Bot.Modules = { };
+﻿class Poly.Bot.Module {
+	func Module(Bot, Name, Requires) {
+		if (Bot.Modules.Get(Name))
+			return false;
 
-function GetModule(Name) {
-	return Static.Poly.Bot.Modules[Name];
-}
-
-function SetModule(Name, Value) {
-	Static.Poly.Bot.Modules[Name] = Value;
-}
-
-function LoadModule(Name) {
-	include_live 'Module/' + Name + '.psx';
-}
-
-function ReloadModule(Name) {
-	reload 'Module/' + Name + '.psx';
-}
-
-function GetHandler(Name) {
-	return Static.Poly.Bot.Handlers[Name];
-}
-
-class Poly.Bot.Module {
-	function Module(Name) {
-		if (!Static.Poly.Bot.Modules[Name]) {
-			this.Name = Name;
-
-			Log.Info('Module ' + Name + ' loading!');
-
-			SetModule(Name, this);
-			return true;
+		foreach (Mod in Requires){
+			if (!Bot.Modules.Get(Mod)){
+				if (!Bot.Modules.Load(Mod)){
+					return false;
+				}
+			}
 		}
-		return false;
+
+		Bot.Modules.Register(Name, this);
+
+		this.Bot = Bot;
+		this.Name = Name;
+		return true;
+	}
+}
+
+class Poly.Bot.ModuleManager {
+	func ModuleManager(Bot) {
+		this.Bot = Bot;
+		this.Bot.Modules = this;
 	}
 
-	function Init(Bot) { }
-
-	function Handles(Name) {
-		if (Static.Poly.Bot.Handlers[Name]) {
-			Log.Warning('Handler already registered: ' + Name + '! Overriding with ' + this.Name + '.');
-		}
-		Static.Poly.Bot.Handlers[Name] = this;
+	func Get(Name) {
+		return this.[Name];
 	}
 
-	function GetHandler(Name) {
-		return Static.Poly.Bot.Handlers[Name];
+	func Set(Name, Value) {
+		this.[Name] = Value;
+	}
+	
+	func Register(Name, Value) {
+		this.[Name] = Value;
+	}
+
+	func Load(Name) {
+		include_live 'Module/' + Name + '.psx';
+
+		return Poly.Bot[Name](this.Bot);
+	}
+
+	func Reload(Name) {
+		reload 'Module/' + Name + '.psx';
+
+		this.Set(Name, null);
+		
+		return Poly.Bot[Name](this.Bot);
 	}
 }
 
 function InitModules(Bot, List) {
-	foreach (P in List) {
-		Name = P.Value;
-		Module = GetModule(Name);
+	Mods = Poly.Bot.ModuleManager(Bot);
+	Log.Info(_.Template('Loading Bot {Bot.Ident}...'));
 
-		if (!Module) {
-			LoadModule(Name);
-			Module = Poly.Bot[Name]();
-		}
+	foreach (P in List) {	
+		Log.Info(_.Template('    Module {P.Value}'));
 
-		Module.Init(Bot);		
+		Mods.Load(P.Value);
 	}
 }

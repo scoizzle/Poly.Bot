@@ -1,4 +1,4 @@
-﻿MyBot = Poly.Bot.Bot();
+﻿MyBot = Poly.Bot();
 
 MyBot.Configure({
 	"Server": "irc server",
@@ -11,7 +11,7 @@ MyBot.Configure({
 });
 
 InitModules(MyBot, [
-	'Command', 'Youtube', 'ConsoleLog', 'Auth', 'Eval'
+	'Command', 'Youtube', 'ConsoleLog', 'Eval'
 ]);
 
 MyBot.On('Connected', () => {

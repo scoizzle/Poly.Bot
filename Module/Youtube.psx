@@ -1,43 +1,39 @@
 ﻿class Poly.Bot.Youtube : Poly.Bot.Module {
-	function Youtube() {
-		if (this.Module("Youtube")) {
-			this.Format = '\\[Youtube\\] {title} ({durationString})\r\nUploaded by {uploader}, {timeSinceUpload} ago, Views {viewCount}, Current Rating {rating}/5';
+	Format = '\\[Youtube\\] {title} ({durationString})\r\nUploaded by {uploader}, {timeSinceUpload} ago, Views {viewCount}, Current Rating {rating}/5';
+
+	function Youtube(Bot) {
+		if (this.Module(Bot, "Youtube")) {
+			Bot.Modules.Url.On(['*youtube.com', '*youtu.be'], this.OnLink);
 		}
-	}
-
-	function Init() {
-		Url = this.GetHandler("Url");
-
-		Url.On(['youtube.com', 'youtu.be'], this.OnLink);
 	}
 
 	function OnLink() {
-		Mod = GetModule('Youtube');
-
 		if (Host.Contains('youtube.com')) {
-			Mod.OnYoutube(this, Convo, Url.Query.v, Mod.Format);
+			VideoID = Url.Query.v;
 		}
 		else if (Host.Contains('youtu.be')) {
-			Mod.OnYoutube(this, Convo, Url.Path, Mod.Format);
+			VideoID = Url.Query.Path;
 		}
-	}
-	
-	function OnYoutube(Bot, Convo, V, Format) {
-		if (!V)
+
+		if (!VideoID) 
 			return;
-		
-		Result = Http.Get('http://gdata.youtube.com/feeds/api/videos/' + V + '?v=2&alt=jsonc');
-		Result = Result.ToObject();
+				
+		Result = Http.Get(_.Template('http://gdata.youtube.com/feeds/api/videos/{VideoID}?v=2&alt=jsonc')).ToObject();
+
+		if (!Result.data || !Result.data.uploaded)
+			return;
 
 		Uploaded = Time.Parse(Result.data.uploaded);
 		Uploaded = Time.Now.Subtract(Uploaded);
 
-		Duration = TimeSpan.FromSeconds(Convert.ToDouble(Result.data.duration));
+		Duration = Convert.ToDouble(Result.data.duration);
+		Duration = TimeSpan.FromSeconds(Duration);
 
 		Result.data.timeSinceUpload = Uploaded.ToDurationString();
 		Result.data.durationString = Duration.ToDurationString();
 
 		Result.data.rating = Math.Round(Convert.ToDouble(Result.data.rating), 1);
-		Bot.SendMessage(Convo, Result.data.Template(Format));
+		
+		Bot.SendMessage(Convo, Result.data.Template(Bot.Modules.Youtube.Format));
 	}
 }

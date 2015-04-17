@@ -1,67 +1,29 @@
-﻿using Events = Poly.Event;
+﻿class Poly.Bot.Command : Poly.Bot.Module {
+	func Command(Bot) {
+		if (this.Module(Bot, "Command")) {
+			Bot.Commands = this;
+			Bot.CommandEngine = Events.Engine();
 
-class Poly.Bot.Command : Poly.Bot.Module {
-	function Command() {
-		if (this.Module("Command")) {
-			this.Bots = [ ];
-			this.Commands = [ ];
-			this.Handles('Cmd');
+			Bot.On('Msg', this.OnCommand); 
+			Bot.On('Notice', this.OnCommand);
 
-			this.On('!cmdlist', () => {
-				Cmd = GetHandler('Cmd');
-				
-				foreach (C in Cmd.Commands) {
-					this.SendNotice(User, C.Key);
-				}
-			});
+			this.On('!cmdlist', this.OnCommandList);
 		}
 	}
-
-	function Init(Bot) {
-		Bot.On('Msg', this.Handle); 
-		Bot.On('Notice', this.Handle);
+		
+	func On(MatchString, Handler) {
+		this.Bot.CommandEngine.Register(MatchString, Handler);
 	}
 
-	function Handle() {
-		Cmd = GetHandler('Cmd');
+	func OnCommand() {
+		Bot.CommandEngine.MatchAndInvoke(Packet.Message, _, true);
+	}
 
-		foreach (C in Cmd.Commands) {
-			Data = Packet.Message.Match(C.Key);
+	func OnCommandList() {
+		Bot.SendNotice(User, 'Available commands:');
 
-			if (Data) {
-				Data.Convo = Convo;
-				Data.User = User;
-				Data.Packet = Packet;
-				Data.this = this;
-
-				if (C.Value.IsCustom) {
-					Cmd.DoHandlerCommand(C.Value.Handler, C.Value.Function, Data);
-					break;
-				}
-				else {
-					Events.Invoke(C.Value, Data);
-					break;
-				}
-			}
+		foreach (C in Bot.CommandEngine.Names) {
+			Bot.SendNotice(User, C.Value);
 		}
-	}
-
-	function DoHandlerCommand(HandlerName, FunctionName, Data) {
-		Handler = GetHandler(HandlerName);
-		Function = Handler.[FunctionName];
-
-		Events.Invoke(Function, Data);
-	}
-
-	function On(MatchString, Handler) {
-		this.Commands[MatchString] = Handler;
-	}
-
-	function OnHandlerCommand(MatchString, HandlerName, FunctionName) {
-		Handler.IsCustom = true;
-		Handler.Handler = HandlerName;
-		Handler.Function = FunctionName;
-
-		this.On(MatchString, Handler);
 	}
 }

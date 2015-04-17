@@ -1,7 +1,9 @@
-﻿Log.Level = LogLevel.Info;
+﻿Log.Level = LogLevels.Info;
 
 include "src/Module.psx";
 include "src/Command.psx";
 include "src/Url.psx";
+include 'src/MySqlConnection.psx';
+
 
 include "Bots/*.psx";

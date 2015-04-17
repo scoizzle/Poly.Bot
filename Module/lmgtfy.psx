@@ -1,0 +1,11 @@
+﻿class Poly.Bot.Lmgtfy: Poly.Bot.Module {
+	function Lmgtfy(Bot) {
+		if (this.Module(Bot, "Lmgtfy")) {
+			Bot.Commands.On('!g {What::UrlEscape}', this.OnEval);
+		}
+	}
+
+	function OnEval() {
+		Bot.SendMessage(Convo, _.Template('http://lmgtfy.com/?q={What}'));
+	}
+}

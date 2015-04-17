@@ -1,25 +1,23 @@
 ﻿using Psx = Poly.Script.Engine;
 
 class Poly.Bot.Eval : Poly.Bot.Module {
-	function Eval() {
-		this.Module("Eval");
-	}
-
-	function Init() {
-		Cmd = GetHandler("Cmd");
-
-		if (App.IsRunningOnMono())
-			Cmd.On("${Script}", this.OnEval);
-		else 
-			Cmd.On("~{Script}", this.OnEval);			
+	function Eval(Bot) {
+		if (this.Module(Bot, 'Eval')) {
+			if (App.IsRunningOnMono())
+				Bot.Commands.On('${Script}', this.OnEval);
+			else
+				Bot.Commands.On("~{Script}", this.OnEval);
+		}
 	}
 
 	function OnEval() {
-		Thread = async(7000) {
-			Ret = Psx.Eval(Script, _);
-		};
+		Thread = async return Psx.Eval(Script, _);
 
+		Thread.Wait(7000);
+
+		Ret = Thread.Result.ToString();
+				
 		if (Ret && !Ret.StartsWith('!'))
-			this.SendMessage(Convo, Ret.ToString());
+			Bot.SendMessage(Convo, Ret.ToString());
 	}
 }
