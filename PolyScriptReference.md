@@ -26,9 +26,9 @@ Managing module data
 --------------------
 
 ### Getting the module context
-`Mod = GetModule('Blackjack');`
+`Mod = Bot.Module.ModuleName;`
 
 ### Functions
 All of the functions in your module are available through the module context. First, get the module context. Then, call your function.
-`Mod = GetModule('Weather');
+`Mod = Bot.Module.Weather;
 Result = Mod.QueryAPI('/forecast/q/' + State + '/' + City + '.json');`

@@ -1,23 +1,24 @@
-﻿using MySql.Data;
+using MySql.Data;
 using Client = MySql.Data.MySqlClient.MySqlConnection;
 using Command = MySql.Data.MySqlClient.MySqlCommand;
 using ParamCollection = MySql.Data.MySqlClient.MySqlParameterCollection;
 
 class MySqlConnection {
 	func MySqlConnection(Server, User, Pass, Database, Port) {
-		ConnectionString = _.Template('server={Server};userid={User};password={Pass}');
+		ConnectionString = |'server={Server};uid={User};password={Pass}';
 
 		if (Port)
-			ConnectionString += _.Template(';port={Port}');
+			ConnectionString += |';port={Port}';
 		
 		if (Database) 
-			ConnectionString += _.Template(';database={Database}');
+			ConnectionString += |';database={Database}';
 
 		this.ConState = Enum:System.Data.ConnectionState;
 		this.Connection = Client.MySqlConnection(ConnectionString);
-
-		try 
+		
+		try {
 			this.Connection.Open();
+		}
 		catch 
 			App.Log.Info(Error.ToString());
 	}
@@ -30,14 +31,17 @@ class MySqlConnection {
 	}
 
 	func Wait(Delay) {
-		for (Ticks; 0 -> Delay) {
-			if (this.Connected())
-				return true;
+		Start = Time.Now;
 
+		while (!this.Connected()) {
 			Sleep(1);
+		
+			Delay = Time.Now - Start;
+			if (Delay.TotalMilliseconds > Delay)
+				return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	func Execute(Cmd, Params) {

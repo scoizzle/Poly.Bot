@@ -2,27 +2,27 @@
 	func Command(Bot) {
 		if (this.Module(Bot, "Command")) {
 			Bot.Commands = this;
-			Bot.CommandEngine = Events.Engine();
+			Bot.Commands.Engine = Events.Engine();
 
 			Bot.On('Msg', this.OnCommand); 
 			Bot.On('Notice', this.OnCommand);
 
 			this.On('!cmdlist', this.OnCommandList);
 		}
-	}
+	}	
 		
 	func On(MatchString, Handler) {
-		this.Bot.CommandEngine.Register(MatchString, Handler);
+		this.Engine.Register(MatchString, Handler);
 	}
 
 	func OnCommand() {
-		Bot.CommandEngine.MatchAndInvoke(Packet.Message, _, true);
+		try Bot.Commands.Engine.MatchAndInvoke(Packet.Message, _, true);
 	}
 
 	func OnCommandList() {
 		Bot.SendNotice(User, 'Available commands:');
 
-		foreach (C in Bot.CommandEngine.Names) {
+		foreach (C in Bot.Commands.Engine.Names) {
 			Bot.SendNotice(User, C.Value);
 		}
 	}

@@ -6,17 +6,11 @@ MyBot.Configure({
 	"Port": 6667,
 	"Ident": "bot ident", 
 	"Nick": "bot nick",
-	"Realname": "bot realname",
-	"UserConfigFile": "Bots/BotName.UserConfig.json"
+	"Realname": "bot realname"
 });
 
-InitModules(MyBot, [
-	'Command', 'Youtube', 'ConsoleLog', 'Eval'
-]);
-
 MyBot.On('Connected', () => {
-	// this is MyBot
-	this.JoinChannel('#channel');
+	Bot.JoinChannel('#channel');
 });
 
 MyBot.Start();

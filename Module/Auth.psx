@@ -4,6 +4,10 @@
 			Bot.Commands.On('!register {username} {email} {password}', this.Register);
 			Bot.Commands.On('!login {username} {password}', this.Login);
 			Bot.Commands.On('!logout', this.Logout);
+
+			Bot.Commands.On('!can {group} {permission}', this.Can);
+			Bot.Commands.On('!grant {group} {permission}', this.Grant);
+			Bot.Commands.On('!deny {group} {permission}', this.Deny);
 		}
 	}
 
@@ -11,7 +15,7 @@
 		if (User.Info)
 			Info = User.Info;
 		else
-			Info = Bot.Modules.MySqlAuth.RegisterUser(username, username, password, email);
+			Info = Bot.Scom.Auth.RegisterUser(username, username, password, email);
 
 		if (Info) {
 			Bot.SendMessage(Convo, 'Thank you for registering!');
@@ -27,10 +31,10 @@
 		if (User.Info)
 			Info = User.Info;
 		else
-			Info = Bot.Modules.MySqlAuth.AuthenticateUser(username, password);
+			Info = Bot.Scom.Auth.AuthenticateUser(username, password);
 
 		if (Info) {
-			Bot.SendMessage(Convo, _.Template('Hi {Info.Display}!'));
+			Bot.SendMessage(Convo, Info | 'Hi {Display}!' );
 
 			User.Info = Info;
 		}
@@ -42,5 +46,44 @@
 	function Logout() {
 		User.Info = null;
 		Bot.SendMessage(Convo, 'Bye bye!');
+	}
+
+	function Can() {
+		Result = Bot.Scom.Auth.HasPermissionByName(group, permission);
+
+		if (Result)
+			Result = 'Yes';
+		else
+			Result = 'No';
+
+		Bot.SendMessage(Convo, Result);
+	}
+
+	function Grant() {
+		if (User.Info) {
+			if (Bot.Scom.Auth.HasPermissionById(User.Info.GroupId, 'set_priv')) {
+				Bot.Scom.Auth.GrantByName(group, permission);
+			}
+			else {
+				Bot.SendMessage(Convo, 'You don\'t have permission to perform this task.');
+			}
+		}
+		else {
+			Bot.SendMessage(Convo, 'You must be authenticated to perform this task.\r\n!login username password');
+		}
+	}
+
+	function Deny() {
+		if (User.Info) {
+			if (Bot.Scom.Auth.HasPermissionById(User.Info.GroupId, 'set_priv')) {
+				Bot.Scom.Auth.DenyByName(group, permission);
+			}
+			else {
+				Bot.SendMessage(Convo, 'You don\'t have permission to perform this task.');
+			}
+		}
+		else {
+			Bot.SendMessage(Convo, 'You must be authenticated to perform this task.\r\n!login username password');
+		}
 	}
 }

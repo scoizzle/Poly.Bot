@@ -222,3 +222,5 @@ Module/*MySql*
 *.userprefs
 *.Config.json
 *.mdb
+
+._*

@@ -7,7 +7,6 @@
 	}
 
 	function OnMsg() {
-		if (Convo.Name != this.Nick)
-			Console.WriteLine(_.Template('\\[{Convo.Name}\\] <{User.Nick}> {Packet.Message}'));
+		Console.WriteLine(|'\\[{Convo.Name}\\] <{User.Nick}> {Packet.Message}');
 	}
 }

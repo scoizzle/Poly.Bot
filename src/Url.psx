@@ -1,6 +1,6 @@
 ﻿class Poly.Bot.Url : Poly.Bot.Module {
 	function Url(Bot) {
-		if (this.Module(Bot, 'Url')){
+		if (this.Module(Bot, 'Url', ['Command'])){
 			this.Handlers = Events.Engine();
 
 			Bot.Commands.On("*http*://{Host}/{Request}", this.OnLink);

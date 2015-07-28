@@ -1,0 +1,41 @@
+﻿/*********************************************************
+	Don't forget to define a WundergroundApiKey for your Bot!
+ */
+
+class Poly.Bot.Weather : Poly.Bot.Module {
+	Format = "Weather for {display_location.full}: Conditions: {weather} | {temperature_string} (Feels like {feelslike_string})\r\nHumidity: {relative_humidity} | Precipitation today: {precip_today_string} | Dew point: {dewpoint_string}";
+
+	func Weather(Bot) {
+		if (!Bot.WundergroundApiKey)
+			return;
+
+		if (this.Module(Bot, "Weather")) {
+			Bot.Commands.On('!w {City::Trim},{State::Trim,ToUpper}', this.GetWeatherByCityState);
+			Bot.Commands.On('!w {Location}', this.GetWeatherByZip);
+		}
+	}
+
+	func QueryAPI(ApiKey, Q) {
+		return Http.Get(|'http://api.wunderground.com/api/{ApiKey}/{Q}').ToObject();
+	}
+
+	func GetWeatherByZip() {
+		Result = Bot.Modules.Weather.QueryAPI(Bot.WundergroundApiKey, |'conditions/q/{Location}.json');
+
+		if ((!Result) || (Result.response.error)) {
+			Bot.SendMessage(Convo, 'Api Error!');
+		}
+
+		Bot.SendMessage(Convo, Result.current_observation | Bot.Modules.Weather.Format);
+	}
+
+	func GetWeatherByCityState() {
+		Result = Bot.Modules.Weather.QueryAPI(Bot.WundergroundApiKey, |'conditions/q/{State}/{City}.json');
+
+		if ((!Result) || (Result.response.error)) {
+			Bot.SendMessage(Convo, 'Api Error!');
+		}
+
+		Bot.SendMessage(Convo, Result.current_observation | Bot.Modules.Weather.Format);
+	}
+}

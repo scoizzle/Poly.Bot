@@ -4,16 +4,15 @@
 			return false;
 
 		foreach (Mod in Requires){
-			if (!Bot.Modules.Get(Mod)){
-				if (!Bot.Modules.Load(Mod)){
+			if (!Bot.Modules.Get(Mod.Value)){
+				if (!Bot.Modules.Load(Mod.Value)){
 					return false;
 				}
 			}
 		}
 
-		Bot.Modules.Register(Name, this);
+		Bot.Modules.Set(Name, this);
 
-		this.Bot = Bot;
 		this.Name = Name;
 		return true;
 	}
@@ -21,44 +20,32 @@
 
 class Poly.Bot.ModuleManager {
 	func ModuleManager(Bot) {
-		this.Bot = Bot;
-		this.Bot.Modules = this;
+		Bot.Modules = this;
 	}
 
 	func Get(Name) {
-		return this.[Name];
+		return this[Name];
 	}
 
 	func Set(Name, Value) {
-		this.[Name] = Value;
-	}
-	
-	func Register(Name, Value) {
-		this.[Name] = Value;
-	}
-
-	func Load(Name) {
-		include_live 'Module/' + Name + '.psx';
-
-		return Poly.Bot[Name](this.Bot);
-	}
-
-	func Reload(Name) {
-		reload 'Module/' + Name + '.psx';
-
-		this.Set(Name, null);
-		
-		return Poly.Bot[Name](this.Bot);
+		this[Name] = Value;
 	}
 }
 
 function InitModules(Bot, List) {
 	Mods = Poly.Bot.ModuleManager(Bot);
-	Log.Info(_.Template('Loading Bot {Bot.Ident}...'));
+	Log.Info(|'Loading Bot {Bot.Ident}...');
 
 	foreach (P in List) {	
-		Log.Info(_.Template('    Module {P.Value}'));
+		Name = P.Value;
 
-		Mods.Load(P.Value);
+		Log.Info(|'    Module {Name}');
+		
+		include_live (| 'Module/{Name}.psx');
+
+		Poly.Bot[Name](Bot);
+
+		if (!Mods.Get(Name))
+			Log.Warning(|'    Module {Name} Failed to load!');
 	}
 }

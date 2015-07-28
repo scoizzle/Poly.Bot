@@ -6,6 +6,6 @@
 	}
 
 	function OnEval() {
-		Bot.SendMessage(Convo, _.Template('http://lmgtfy.com/?q={What}'));
+		Bot.SendMessage(Convo, | 'http://lmgtfy.com/?q={What}');
 	}
 }

@@ -1,0 +1,6 @@
+﻿MySql = {
+	'Server': 'localhost',
+	'Database': 'Scom',
+	'Username': 'Poly',
+	'Password': '!6688846993!'
+};

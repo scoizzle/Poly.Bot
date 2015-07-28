@@ -6,7 +6,7 @@
 	}
 
 	function OnConnected() {
-		Sleep(5000);
+		Sleep(2000);
 
 		foreach (Chan in Bot.AutoJoin) {			
 			Bot.JoinChannel(Chan.Key, Chan.Value);

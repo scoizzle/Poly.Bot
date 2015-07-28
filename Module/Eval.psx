@@ -11,9 +11,11 @@ class Poly.Bot.Eval : Poly.Bot.Module {
 	}
 
 	function OnEval() {
-		Thread = async return Psx.Eval(Script, _);
+		Thread = async {
+			return Psx.Eval(Script, _);
+		}
 
-		Thread.Wait(7000);
+		Thread.Wait(7000, true);
 
 		Ret = Thread.Result.ToString();
 				

@@ -1,10 +1,23 @@
-﻿class Poly.Bot.Youtube : Poly.Bot.Module {
-	Format = '\\[Youtube\\] {title} ({durationString})\r\nUploaded by {uploader}, {timeSinceUpload} ago, Views {viewCount}, Current Rating {rating}/5';
+﻿/*********************************************************
+	Don't forget to define a YoutubeApiKey for your Bot!
+ */
+
+class Poly.Bot.Youtube : Poly.Bot.Module {
+	OutputFormat = '\\[Youtube\\] {Title} ({Duration})\r\nUploaded by {Uploader}, {TimeSinceUpload} ago, {Views} Views, Current Rating {Rating}/5';
 
 	function Youtube(Bot) {
-		if (this.Module(Bot, "Youtube")) {
+		if (!Bot.YoutubeApiKey)
+			return;
+
+		if (this.Module(Bot, "Youtube", [ 'Url' ])) {
 			Bot.Modules.Url.On(['*youtube.com', '*youtu.be'], this.OnLink);
 		}
+	}
+
+	function Request(ApiKey, Query) {
+		Query = Query.ToPostString();
+
+		return Http.Get(| 'https://www.googleapis.com/youtube/v3/videos?{Query}&key={ApiKey}');
 	}
 
 	function OnLink() {
@@ -17,23 +30,47 @@
 
 		if (!VideoID) 
 			return;
-				
-		Result = Http.Get(_.Template('http://gdata.youtube.com/feeds/api/videos/{VideoID}?v=2&alt=jsonc')).ToObject();
 
-		if (!Result.data || !Result.data.uploaded)
-			return;
+		YT = Bot.Modules.Youtube;
 
-		Uploaded = Time.Parse(Result.data.uploaded);
-		Uploaded = Time.Now.Subtract(Uploaded);
+		Response = YT.Request(Bot.YoutubeApiKey, {
+			'id': @VideoID,
+			'part': 'contentDetails,snippet,statistics'
+		}); 
 
-		Duration = Convert.ToDouble(Result.data.duration);
-		Duration = TimeSpan.FromSeconds(Duration);
+		Response = Response.ToObject();
+		Info = Response.items.0;
 
-		Result.data.timeSinceUpload = Uploaded.ToDurationString();
-		Result.data.durationString = Duration.ToDurationString();
+		Info = {
+			'Id': @Info.id,
+			'PublishedAt': @Info.snippet.publishedAt,
+			'Title': @Info.snippet.title,
+			'Uploader': @Info.snippet.channelTitle,
+			'Duration': @Info.contentDetails.duration,
+			'Views': @Info.statistics.viewCount,
+			'Likes': @Info.statistics.likeCount.ToNum(),
+			'Dislikes': @Info.statistics.dislikeCount.ToNum()
+		};
 
-		Result.data.rating = Math.Round(Convert.ToDouble(Result.data.rating), 1);
+		Info.TimeSinceUpload = Time.Parse(Info.PublishedAt);
+		Info.TimeSinceUpload = Time.Now - Info.TimeSinceUpload;
+		Info.TimeSinceUpload = Info.TimeSinceUpload.ToDurationString();
+
+		Info.Duration = Info.Duration.Replace('P', '');
+		Info.Duration = Info.Duration.Replace('D', '');
+		Info.Duration = Info.Duration.Replace('T', '');
+		Info.Duration = Info.Duration.Replace('H', 'h ');
+		Info.Duration = Info.Duration.Replace('M', 'm ');
+		Info.Duration = Info.Duration.Replace('S', 's');
+
+		Info.TotalRatings = Info.Likes + Info.Dislikes;
+
+		Likes = Convert.ToDouble(Info.Likes);
+		TotalRatings = Convert.ToDouble(Info.TotalRatings);
 		
-		Bot.SendMessage(Convo, Result.data.Template(Bot.Modules.Youtube.Format));
+		Info.Rating = Likes / TotalRatings;
+		Info.Rating = Math.Round(Info.Rating * 5, 1);
+
+		Bot.SendMessage(Convo, Info | YT.OutputFormat);
 	}
 }
